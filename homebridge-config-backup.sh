@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOMEBRIDGE_BACKUP_DIR='/<user_directory>/docker/homebridge/backup/'
+HOMEBRIDGE_BACKUP_DIR='/<abs_path>/docker/homebridge/backup/'
 LOG_FILE="${HOMEBRIDGE_BACKUP_DIR}backup.log"
 DATE=$(date)
 
