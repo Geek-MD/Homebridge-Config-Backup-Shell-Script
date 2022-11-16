@@ -2,10 +2,10 @@
 This is a bash script that allows you to automate local backup of *config.json* of a Homebridge instance runing inside a Docker container.
 
 Things to do after dowloading script
-1. Edit the script and change *<abs_path>* with the location where you stored *homebridge-config-backup.sh*
+1. Edit the script and replace *<abs_path>* with the location where you stored *homebridge-config-backup.sh*
 2. Make shell script executable runing "chmod u+x homebridge-config-backup.sh"
 3. Edit cron with "crontab -e" command and add the subsequent line at the end
-4. 0,15,30,45 * * * * bash /<abs_path>/homebridge-config-backup.sh changing *<abs_path>* with the location where you stored *homebridge-config-backup.sh*
+4. 0,15,30,45 * * * * bash /<abs_path>/homebridge-config-backup.sh replacing *<abs_path>* with the location where you stored *homebridge-config-backup.sh*
 5. Save cron using Ctrl-O
 6. Exit editor with Ctrl-X
 7. Reboot so changes take effect
