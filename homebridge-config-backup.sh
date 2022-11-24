@@ -73,15 +73,18 @@ if [ -s "$LOG_FILE" ]
     cp "$FILE2" "$BAK"
     fi
 
-# If md5sum of config.json is different from config.bak, add log data, copy config.json into config.bak, and copy config.bak into config-md5sum.bak
+# If md5sum and comparison of config.json and config.bak are different, add log data, copy config.json into config.bak, and copy config.bak into config-md5sum.bak
 if [ $m1 == $m2 ]
   then
     :
   else
-    LOG_DATA="${DATE} : ${BAK}"
-    echo "$LOG_DATA" >> "${LOG_FILE}"
-    cp "$FILE1" "$FILE2"
-    cp "$FILE2" "$BAK"
+    if cmp -s "$FILE1" "$FILE2"
+      :
+    else
+      LOG_DATA="${DATE} : ${BAK}"
+      echo "$LOG_DATA" >> "${LOG_FILE}"
+      cp "$FILE1" "$FILE2"
+      cp "$FILE2" "$BAK"
 fi
 
 # Remove local version of config.json
