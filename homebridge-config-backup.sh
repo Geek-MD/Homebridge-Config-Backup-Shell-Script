@@ -1,8 +1,12 @@
 #!/bin/bash
+# homebridge-config-backup.sh v1.1.0
+# Bash script that allows you to automate local backup of config.json of a Homebridge instance runing inside a Docker container.
 
-HOMEBRIDGE_BACKUP_DIR='/<abs_path>/docker/homebridge/backup/'
-LOG_FILE="${HOMEBRIDGE_BACKUP_DIR}backup.log"
+# Define some variables.
+HOMEBRIDGE_BACKUP_DIR='$HOME/docker/homebridge/backup'
+LOG_FILE="${HOMEBRIDGE_BACKUP_DIR}/backup.log"
 DATE=$(date)
+BACKUPLIMIT=15
 
 # If backup directory does not exist, then create it.
 if test -d "$HOMEBRIDGE_BACKUP_DIR"
@@ -33,8 +37,8 @@ fi
 # Copy config.json from docker container to local.
 DOCKERFILE="${DOCKER_ID}:/homebridge/config.json"
 
-FILE1="${HOMEBRIDGE_BACKUP_DIR}config.json"
-FILE2="${HOMEBRIDGE_BACKUP_DIR}config.bak"
+FILE1="${HOMEBRIDGE_BACKUP_DIR}/config.json"
+FILE2="${HOMEBRIDGE_BACKUP_DIR}/config.bak"
 
 docker cp "$DOCKERFILE" "$FILE1"
 
@@ -52,7 +56,7 @@ fi
 # Check md5sum of config.bak
 m2=$(md5sum "$FILE2" | cut -d " " -f1)
 
-BAK="${HOMEBRIDGE_BACKUP_DIR}config-${m2}.bak"
+BAK="${HOMEBRIDGE_BACKUP_DIR}/config-${m2}.bak"
 
 # If config-md5sum.bak does not exist, create it from config.bak
 if test -f "$BAK"
@@ -73,30 +77,32 @@ if [ -s "$LOG_FILE" ]
     cp "$FILE2" "$BAK"
     fi
 
-# If md5sum and comparison of config.json and config.bak are different, add log data, copy config.json into config.bak, and copy config.bak into config-md5sum.bak
-if [ $m1 == $m2 ]
+# If md5sum of config.json is different from config.bak, add log data, copy config.json into config.bak, and copy config.bak into config-md5sum.bak
+if [ "$m1" == "$m2" ]
   then
     :
   else
     if cmp -s "$FILE1" "$FILE2"
-      :
-    else
+      then
+        :
+      else
       LOG_DATA="${DATE} : ${BAK}"
       echo "$LOG_DATA" >> "${LOG_FILE}"
       cp "$FILE1" "$FILE2"
       cp "$FILE2" "$BAK"
+    fi
 fi
 
 # Remove local version of config.json
 rm "$FILE1"
 
-#Check number of backup files
-FILECOUNT=$(ls ${HOMEBRIDGE_BACKUP_DIR}config-*.bak | wc -l)
+# Check number of backup files
+BACKUPCOUNT=$(find "$HOMEBRIDGE_BACKUP_DIR" -name "config-*.bak" | wc -l)
 
-# If number of backup files is greater than 15, remove backups older than 30 days
-if [ FILECOUNT < 16 ]
+# If number of backup files is greater than 15, remove older backups
+if [ "$BACKUPCOUNT" -gt "$BACKUPLIMIT" ]
   then
-    :
+    find "$HOMEBRIDGE_BACKUP_DIR" -name "config-*.bak" | tail --lines=+"$(("$BACKUPLIMIT" + 1))" | xargs -d '\n' rm
   else
-    find ${HOMEBRIDGE_BACKUP_DIR}config-*.bak -mtime +30 -exec rm {} \;
+    :
 fi
