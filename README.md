@@ -1,7 +1,7 @@
 # homebridge-config-backup.sh
 This is a bash script that allows you to automate local backup of *config.json* of a Homebridge instance runing inside a Docker container.
 
-With v1.2.0, this script implements unix-like commands usage, so if you want to use a working directory different from default one, you must use ***-d*** option along with the path to that directory.
+With v1.2.0, this script implements unix-like command structure, so if you want to use a working directory different from default one, you must use ***-d*** option along with the path to that directory.
 
 Things to do after dowloading script
 
