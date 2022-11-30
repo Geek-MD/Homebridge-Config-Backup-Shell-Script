@@ -40,6 +40,7 @@ if [[ $1 == "--help" || $1 == "-h" ]]
     echo ""
     echo "AUTHOR:"
     echo "    Written by Edison Montes M."
+    echo "    <https://github.com/Geek-MD/homebridge-config-backup>"
     echo ""
     echo "COPYRIGHT:"
     echo "    MIT License <https://github.com/Geek-MD/homebridge-config-backup/blob/main/LICENSE>."
@@ -62,6 +63,7 @@ if [[ $1 == "--version" || $1 == "-v" ]]
     echo "There is NO WARRANTY, to the extent permitted by law."
     echo ""
     echo "Written by Edison Montes M."
+    echo "<https://github.com/Geek-MD/homebridge-config-backup>"
     exit 0
 fi
 
