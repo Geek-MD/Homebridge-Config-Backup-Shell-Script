@@ -1,19 +1,96 @@
 #!/bin/bash
-# homebridge-config-backup.sh v1.1.0
+# homebridge-config-backup.sh v1.2.0
 # Bash script that allows you to automate local backup of config.json of a Homebridge instance runing inside a Docker container.
 
 # Define some variables.
-HOMEBRIDGE_BACKUP_DIR='$HOME/docker/homebridge/backup'
-LOG_FILE="${HOMEBRIDGE_BACKUP_DIR}/backup.log"
+NAME="homebridge-config-backup.sh"
+COMMAND="./$NAME"
+DEFAULT_WORKING_DIR=$(pwd)
+DEFAULT_BACKUP_LIMIT=15
+VERSION="v1.2.0"
 DATE=$(date)
-BACKUPLIMIT=15
+
+# Print help if requested.
+if [[ $1 == "--help" || $1 == "-h" ]]
+  then
+    echo "NAME:"
+    echo "    $NAME - Bash script that allows you to automate local backup of config.json of a Homebridge instance runing inside a Docker container"
+    echo ""
+    echo "SYNOPSIS:"
+    echo "    $COMMAND [OPTION]... [ARGUMENT]..."
+    echo ""
+    echo "DESCRIPTION:"
+    echo "    -d, --directory"
+    echo "        sets working directory for config backups"
+    echo "    -l, --limit"
+    echo "        sets an specific limit for the amount of backup files that will be kept"
+    echo "    -h, --help"
+    echo "        display this help and exit"
+    echo "    -v, --version"
+    echo "        output version information and exit"
+    echo ""
+    echo "    The LIMIT argument is optional and must be integer. Default limit is 15 files."
+    echo "    The DIRECTORY argument is optional. The script assumes that the working directory you're setting is a subdirectory of \$HOME, so don't add \$HOME at the start of the argument. See the examples. Default working directory is where $NAME is located."
+    echo ""
+    echo "EXAMPLES:"
+    echo "    $COMMAND -d docker/homebridge/backup"
+    echo "        set \$HOME/docker/homebridge/backup as the working directory"
+    echo "    $COMMAND --limit 30"
+    echo "        set 30 as the limit of backup files that will be kept"
+    echo ""
+    echo "AUTHOR:"
+    echo "    Written by Edison Montes M."
+    echo ""
+    echo "COPYRIGHT:"
+    echo "    MIT License <https://github.com/Geek-MD/homebridge-config-backup/blob/main/LICENSE>."
+    echo "    This is free software: you are free to change and redistribute it."
+    echo "    There is NO WARRANTY, to the extent permitted by law."
+    exit 0
+fi
+
+# Define some variables.
+DEFAULT_WORKING_DIR=$(pwd)
+DEFAULT_BACKUP_LIMIT=15
+VERSION="v1.2.0"
+DATE=$(date)
+
+if [[ $1 == "--version" || $1 == "-v" ]]
+  then
+    echo "$NAME $VERSION"
+    echo "MIT License <https://github.com/Geek-MD/homebridge-config-backup/blob/main/LICENSE>."
+    echo "This is free software: you are free to change and redistribute it."
+    echo "There is NO WARRANTY, to the extent permitted by law."
+    echo ""
+    echo "Written by Edison Montes M."
+    exit 0
+fi
+
+if [[ $1 == "--directory" || $1 == "-d" ]]
+  then
+    WORKING_DIR="$HOME/$2"
+  else
+    WORKING_DIR="$DEFAULT_WORKING_DIR"
+fi
+LOG_FILE="${WORKING_DIR}/backup.log"
+
+if [[ $1 == "--limit" || $1 == "-l" ]]
+  then
+    if [[ $2 =~ ^[0-9]+$ ]]
+      then
+        echo "--limit argument not integer. Check $COMMAND -v for more info."
+        exit 0
+    fi
+    BACKUP_LIMIT="$2"
+  else
+    BACKUP_LIMIT="$DEFAULT_BACKUP_LIMIT"
+fi
 
 # If backup directory does not exist, then create it.
-if test -d "$HOMEBRIDGE_BACKUP_DIR"
+if test -d "$WORKING_DIR"
   then
     :
   else
-    mkdir "$HOMEBRIDGE_BACKUP_DIR"
+    mkdir "$WORKING_DIR"
 fi
 
 # If log file dos not exist, then create it.
@@ -37,8 +114,8 @@ fi
 # Copy config.json from docker container to local.
 DOCKERFILE="${DOCKER_ID}:/homebridge/config.json"
 
-FILE1="${HOMEBRIDGE_BACKUP_DIR}/config.json"
-FILE2="${HOMEBRIDGE_BACKUP_DIR}/config.bak"
+FILE1="${WORKING_DIR}/config.json"
+FILE2="${WORKING_DIR}/config.bak"
 
 docker cp "$DOCKERFILE" "$FILE1"
 
@@ -56,7 +133,7 @@ fi
 # Check md5sum of config.bak
 m2=$(md5sum "$FILE2" | cut -d " " -f1)
 
-BAK="${HOMEBRIDGE_BACKUP_DIR}/config-${m2}.bak"
+BAK="${WORKING_DIR}/config-${m2}.bak"
 
 # If config-md5sum.bak does not exist, create it from config.bak
 if test -f "$BAK"
@@ -97,12 +174,12 @@ fi
 rm "$FILE1"
 
 # Check number of backup files
-BACKUPCOUNT=$(find "$HOMEBRIDGE_BACKUP_DIR" -name "config-*.bak" | wc -l)
+BACKUP_COUNT=$(find "$WORKING_DIR" -name "config-*.bak" | wc -l)
 
 # If number of backup files is greater than 15, remove older backups
-if [ "$BACKUPCOUNT" -gt "$BACKUPLIMIT" ]
+if [ "$BACKUP_COUNT" -gt "$BACKUP_LIMIT" ]
   then
-    find "$HOMEBRIDGE_BACKUP_DIR" -name "config-*.bak" | tail --lines=+"$(("$BACKUPLIMIT" + 1))" | xargs -d '\n' rm
+    find "$WORKING_DIR" -name "config-*.bak" | tail --lines=+"$(("$BACKUP_LIMIT" + 1))" | xargs -d '\n' rm
   else
     :
 fi
