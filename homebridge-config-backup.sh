@@ -1,20 +1,23 @@
 #!/bin/bash
-# homebridge-config-backup.sh v1.2.0
+# homebridge-config-backup.sh v1.2.1
 # Bash script that allows you to automate local backup of config.json of a Homebridge instance runing inside a Docker container.
 
 # Define some variables.
 NAME="homebridge-config-backup.sh"
 COMMAND="./$NAME"
 DEFAULT_WORKING_DIR=$(pwd)
+WORKING_DIR="$DEFAULT_WORKING_DIR"
 DEFAULT_BACKUP_LIMIT=15
-VERSION="v1.2.0"
+BACKUP_LIMIT="$DEFAULT_BACKUP_LIMIT"
+VERSION="v1.2.1"
 DATE=$(date)
 
 # Print help if requested.
 if [[ $1 == "--help" || $1 == "-h" ]]
   then
     echo "NAME:"
-    echo "    $NAME - Bash script that allows you to automate local backup of config.json of a Homebridge instance runing inside a Docker container"
+    echo "    $NAME - Bash script that allows you to automate local backup of config.json of a Homebridge instance runing inside" 
+    echo "    a Docker container"
     echo ""
     echo "SYNOPSIS:"
     echo "    $COMMAND [OPTION]... [ARGUMENT]..."
@@ -29,8 +32,10 @@ if [[ $1 == "--help" || $1 == "-h" ]]
     echo "    -v, --version"
     echo "        output version information and exit"
     echo ""
-    echo "    The LIMIT argument is optional and must be integer. Default limit is 15 files."
-    echo "    The DIRECTORY argument is optional. The script assumes that the working directory you're setting is a subdirectory of \$HOME, so don't add \$HOME at the start of the argument. See the examples. Default working directory is where $NAME is located."
+    echo "    The argument for -l or --limit option must be an integer. Default limit is 15 files."
+    echo "    The argument for -d or --directory option assumes that the working directory you're setting is a subdirectory of"
+    echo "    \$HOME, so don't add \$HOME at the start of the argument. See the examples. Default working directory is where"
+    echo "    $NAME is located."
     echo ""
     echo "EXAMPLES:"
     echo "    $COMMAND -d docker/homebridge/backup"
@@ -48,12 +53,6 @@ if [[ $1 == "--help" || $1 == "-h" ]]
     echo "    There is NO WARRANTY, to the extent permitted by law."
     exit 0
 fi
-
-# Define some variables.
-DEFAULT_WORKING_DIR=$(pwd)
-DEFAULT_BACKUP_LIMIT=15
-VERSION="v1.2.0"
-DATE=$(date)
 
 if [[ $1 == "--version" || $1 == "-v" ]]
   then
@@ -154,22 +153,17 @@ if [ -s "$LOG_FILE" ]
     echo "$LOG_DATA" >> "${LOG_FILE}"
     cp "$FILE1" "$FILE2"
     cp "$FILE2" "$BAK"
-    fi
+fi
 
-# If md5sum of config.json is different from config.bak, add log data, copy config.json into config.bak, and copy config.bak into config-md5sum.bak
+# If md5sum of config.json is different from config.bak, add log data, copy config.json into config.bak, and copy config.bak into conf>
 if [ "$m1" == "$m2" ]
   then
     :
   else
-    if cmp -s "$FILE1" "$FILE2"
-      then
-        :
-      else
-      LOG_DATA="${DATE} : ${BAK}"
-      echo "$LOG_DATA" >> "${LOG_FILE}"
-      cp "$FILE1" "$FILE2"
-      cp "$FILE2" "$BAK"
-    fi
+    LOG_DATA="${DATE} : ${BAK}"
+    echo "$LOG_DATA" >> "${LOG_FILE}"
+    cp "$FILE1" "$FILE2"
+    cp "$FILE2" "$BAK"
 fi
 
 # Remove local version of config.json
